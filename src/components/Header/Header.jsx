@@ -18,7 +18,7 @@ const Header = () => {
       <div className="container">
         <div className="row">
           <div className="col-6">
-            <div className="logo">MATHHERO</div>
+            <div className="logo middle">MATHHERO</div>
           </div>
           <div className="col-6 nav-container">
             <nav className="header-nav">
