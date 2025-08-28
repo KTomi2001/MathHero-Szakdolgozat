@@ -310,6 +310,7 @@ const FirstGrade = ({ username, onLogout }) => {
               <div className="question-image">
                 <img src={currentQuestion.image} alt="Kérdés illusztráció" />
               </div>
+              <p className="image-source">Kép forrása: https://www.tankonyvkatalogus.hu/storage/pdf/OH-MAT01MC__teljes.pdf</p>
               
               <div className="options-container">
                 {currentQuestion.options.map((option) => (
@@ -371,6 +372,7 @@ const FirstGrade = ({ username, onLogout }) => {
                     <div className="question-image">
                       <img src={question.image} alt="Kérdés illusztráció" />
                     </div>
+                    <p className="image-source">Kép forrása: https://www.tankonyvkatalogus.hu/storage/pdf/OH-MAT01MC__teljes.pdf</p>
                     
                     <div className="options-container-result">
                       {question.options.map((option) => (

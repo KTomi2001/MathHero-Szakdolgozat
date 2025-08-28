@@ -575,3 +575,12 @@ body.dashboard-page {
     color: #f44336;
     font-weight: bold;
   }
+
+  .image-source {
+  text-align: center;
+  font-size: 12px;
+  color: #888888;
+  margin-top: -20px; 
+  margin-bottom: 25px; 
+  font-style: italic;
+}
