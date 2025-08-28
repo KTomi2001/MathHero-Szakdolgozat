@@ -1,0 +1,150 @@
+.auth-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.auth-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.auth-modal-container {
+  background-color: var(--white);
+  border-radius: 8px;
+  padding: 24px;
+  z-index: 10000;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  margin: 0 16px;
+  position: relative;
+}
+
+.auth-modal-header {
+  display: flex;
+  justify-content: flex-end;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+.auth-modal-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #999;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.auth-modal-close:hover {
+  color: var(--text-color);
+}
+
+.auth-form-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.auth-logo {
+  width: 300px;
+  height: 200px;
+  margin: 0 auto;
+  object-fit: contain; 
+}
+
+.auth-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--secondary-color);
+  margin-top: 16px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  background-color: #f5f5f5;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #ebebeb;
+}
+
+.input-icon {
+  margin-right: 12px;
+  color: #888;
+  font-size: 18px;
+}
+
+.auth-input {
+  background-color: transparent;
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: var(--text-color);
+}
+
+.submit-button {
+  background-color: var(--secondary-color);
+  color: white;
+  font-weight: 600;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+  background-color: #e69500;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.auth-switch-text {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.auth-switch-button {
+  width: 100%;
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: 600;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.auth-switch-button:hover {
+  background-color: #3579c6;
+}

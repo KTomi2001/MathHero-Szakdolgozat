@@ -1,0 +1,12 @@
+.features-section {
+  padding: 60px 0px;
+  background-color: var(--white);
+}
+
+.feature-hero-image {
+  max-height: 500px;
+}
+
+.feature-cards-container {
+  margin-top: 20px;
+}

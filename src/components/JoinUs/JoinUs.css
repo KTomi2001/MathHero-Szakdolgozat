@@ -1,0 +1,30 @@
+.join-section {
+  padding: 60px 0;
+  background-color: var(--white);
+}
+
+.join-text {
+  margin-bottom: 30px;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.register-btn {
+  background-color: var(--secondary-color);
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.register-btn:hover {
+  background-color: #e69400;
+  transform: translateY(-2px);
+}
+
+.king-image {
+  max-height: 300px;
+}
