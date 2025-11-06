@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import cat from "../../assets/MainPage/cat.svg";
-import "./DashboardSettings.css";
 import { auth, db } from "../../firebase";
+import "./DashboardSettings.css";
 import { 
   updateProfile, 
   updateEmail, 
@@ -15,7 +15,7 @@ import {
 import { doc, getDoc, updateDoc, collection, query, where, getDocs } from "firebase/firestore";
 
 const DashboardSettings = ({ username, onLogout }) => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [displayName, setDisplayName] = useState(username || "");
   const [originalDisplayName, setOriginalDisplayName] = useState(""); 
   const [email, setEmail] = useState("");
@@ -28,10 +28,6 @@ const DashboardSettings = ({ username, onLogout }) => {
   const [user, setUser] = useState(null);
   const [emailVerified, setEmailVerified] = useState(false);
   const navigate = useNavigate();
-
-  const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
-  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -55,10 +51,6 @@ const DashboardSettings = ({ username, onLogout }) => {
     };
 
     fetchUserData();
-    document.body.classList.add("dashboard-page");
-    return () => {
-      document.body.classList.remove("dashboard-page");
-    };
   }, []);
 
   const checkUsernameExists = async (username) => {
@@ -303,173 +295,243 @@ const DashboardSettings = ({ username, onLogout }) => {
   };
 
   return (
-    <div className="dashboard-container">
-      <div className={`sidebar ${sidebarCollapsed ? "collapsed" : ""}`}>
-        {sidebarCollapsed && (
-          <div
-            className="hamburger-icon"
-            onClick={toggleSidebar}
-            role="button"
-            tabIndex={0}
-            aria-label="Expand sidebar"
-          >
-            ☰
-          </div>
-        )}
-
-        {!sidebarCollapsed && (
-          <button
-            className="sidebar-toggle"
-            onClick={toggleSidebar}
-            aria-label="Collapse sidebar"
-          >
-            ☰
-          </button>
-        )}
-
-        <div className="logo">
-          <img src={cat} alt="MathHero" />
-          <h1>MATHHERO</h1>
+    <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: '#f3f4f6' }}>
+      <div 
+        className={`bg-dark text-white ${sidebarOpen ? '' : 'd-none d-lg-flex'}`}
+        style={{
+          width: '250px',
+          position: 'fixed',
+          height: '100vh',
+          overflowY: 'auto',
+          zIndex: 1050,
+          flexDirection: 'column'
+        }}
+      >
+        <div className="text-center py-4">
+          <img src={cat} alt="MathHero" style={{ width: '65px', height: '65px' }} />
+          <h5 className="mt-2 mb-0">MATHHERO</h5>
         </div>
-
-        <hr className="menu-divider" />
-
-        <div className="menu-items">
-          <div className="menu-item" onClick={() => navigate("/dashboard")}>
-            <span className="icon">👤</span>
+        
+        <hr className="border-secondary mx-3" />
+        
+        <div className="flex-grow-1">
+          <div 
+            className="d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded text-white-50"
+            style={{ cursor: 'pointer' }}
+            onClick={() => { navigate("/dashboard"); setSidebarOpen(false); }}
+          >
+            <span style={{ fontSize: '20px' }}>👤</span>
             <span>Felhasználó</span>
           </div>
-          <div className="menu-item" onClick={() => navigate("/practice")}>
-            <span className="icon">⭐</span>
+          
+          <div 
+            className="d-flex align-items-center gap-3 px-3 py-2 mx-2 mt-2 rounded text-white-50"
+            style={{ cursor: 'pointer' }}
+            onClick={() => { navigate("/practice"); setSidebarOpen(false); }}
+          >
+            <span style={{ fontSize: '20px' }}>⭐</span>
             <span>Gyakorlás</span>
           </div>
         </div>
-
-        <div className="menu-items bottom-menu">
-          <hr className="menu-divider" />
-          <div className="menu-item active" onClick={() => navigate("/settings")}>
-            <span className="icon">⚙️</span>
+        
+        <div className="mt-auto">
+          <hr className="border-secondary mx-3" />
+          
+          <div 
+            className="d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded bg-secondary bg-opacity-25 text-white"
+            style={{ cursor: 'pointer' }}
+            onClick={() => { navigate("/settings"); setSidebarOpen(false); }}
+          >
+            <span style={{ fontSize: '20px' }}>⚙️</span>
             <span>Beállítások</span>
           </div>
-          <div className="menu-item" onClick={handleLogout}>
-            <span className="icon">🚪</span>
+          
+          <div 
+            className="d-flex align-items-center gap-3 px-3 py-2 mx-2 mt-2 mb-3 rounded text-white-50"
+            style={{ cursor: 'pointer' }}
+            onClick={handleLogout}
+          >
+            <span style={{ fontSize: '20px' }}>🚪</span>
             <span>Kijelentkezés</span>
           </div>
         </div>
       </div>
 
-      <div className="main-content">
-        <div className="settings-header">
-          <h2>Felhasználói beállítások</h2>
+      {sidebarOpen && (
+        <div 
+          className="d-lg-none"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            zIndex: 1040
+          }}
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <div className="flex-grow-1" style={{ marginLeft: '0' }}>
+        <div className="d-lg-none">
+          <button 
+            className="btn btn-primary rounded-circle m-3"
+            style={{ width: '50px', height: '50px', position: 'fixed', zIndex: 1060 }}
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            ☰
+          </button>
         </div>
 
-        {message.text && (
-          <div className={`message ${message.type}`}>
-            {message.text}
-          </div>
-        )}
-
-        <div className="settings-sections">
-          <div className="settings-section">
-            <h3>Felhasználónév megváltoztatása</h3>
-            <form onSubmit={handleUpdateProfile}>
-              <div className="form-group">
-                <label htmlFor="displayName">Felhasználónév</label>
-                <input
-                  type="text"
-                  id="displayName"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  required
-                />
-              </div>
-              <button type="submit" disabled={loading}>
-                {loading ? "Folyamatban..." : "Profil mentése"}
-              </button>
-            </form>
+        <div className="container-fluid" style={{ paddingLeft: '0', paddingRight: '0' }}>
+          <div className="text-center mb-4" style={{ paddingLeft: '20px', paddingRight: '20px', paddingTop: '20px' }}>
+            <h2 className="display-5 fw-bold text-dark">Felhasználói beállítások</h2>
           </div>
 
-          <div className="settings-section">
-            <h3>Email megváltoztatása</h3>
-            {user && !emailVerified && (
-              <div className="verification-warning">
-                <p>Az email címed még nincs megerősítve.</p>
-                <button 
-                  onClick={resendVerificationEmail} 
-                  disabled={loading}
-                  className="secondary-button"
-                >
-                  Megerősítő email újraküldése
-                </button>
-              </div>
-            )}
-            <form onSubmit={handleUpdateEmail}>
-              <div className="form-group">
-                <label htmlFor="email">Email</label>
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="currentPassword">Jelenlegi jelszó</label>
-                <input
-                  type="password"
-                  id="currentPassword"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <button type="submit" disabled={loading}>
-                {loading ? "Folyamatban..." : "Email frissítése"}
-              </button>
-            </form>
-          </div>
+          {message.text && (
+            <div className={`alert ${message.type === 'success' ? 'alert-success' : 'alert-danger'} mx-auto`} style={{ maxWidth: '700px', marginLeft: '20px', marginRight: '20px' }}>
+              {message.text}
+            </div>
+          )}
 
-          <div className="settings-section">
-            <h3>Jelszó megváltoztatása</h3>
-            <form onSubmit={handleChangePassword}>
-              <div className="form-group">
-                <label htmlFor="currentPwd">Jelenlegi jelszó</label>
-                <input
-                  type="password"
-                  id="currentPwd"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  required
-                />
+          <div className="mx-auto" style={{ maxWidth: '700px', paddingLeft: '20px', paddingRight: '20px', paddingBottom: '20px' }}>
+            <div className="card border-0 shadow-sm mb-4">
+              <div className="card-body p-4">
+                <h5 className="card-title text-primary mb-4">Felhasználónév megváltoztatása</h5>
+                <form onSubmit={handleUpdateProfile}>
+                  <div className="mb-3">
+                    <label htmlFor="displayName" className="form-label">Felhasználónév</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="displayName"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+                    {loading ? "Folyamatban..." : "Profil mentése"}
+                  </button>
+                </form>
               </div>
-              <div className="form-group">
-                <label htmlFor="newPassword">Új jelszó</label>
-                <input
-                  type="password"
-                  id="newPassword"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                />
+            </div>
+
+            <div className="card border-0 shadow-sm mb-4">
+              <div className="card-body p-4">
+                <h5 className="card-title text-primary mb-4">Email megváltoztatása</h5>
+                {user && !emailVerified && (
+                  <div className="alert alert-warning">
+                    <p className="mb-2">Az email címed még nincs megerősítve.</p>
+                    <button 
+                      onClick={resendVerificationEmail} 
+                      disabled={loading}
+                      className="btn btn-sm btn-warning"
+                    >
+                      Megerősítő email újraküldése
+                    </button>
+                  </div>
+                )}
+                <form onSubmit={handleUpdateEmail}>
+                  <div className="mb-3">
+                    <label htmlFor="email" className="form-label">Email</label>
+                    <input
+                      type="email"
+                      className="form-control"
+                      id="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="currentPassword" className="form-label">Jelenlegi jelszó</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      id="currentPassword"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+                    {loading ? "Folyamatban..." : "Email frissítése"}
+                  </button>
+                </form>
               </div>
-              <div className="form-group">
-                <label htmlFor="confirmPassword">Új jelszó megerősítése</label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
+            </div>
+
+            <div className="card border-0 shadow-sm mb-4">
+              <div className="card-body p-4">
+                <h5 className="card-title text-primary mb-4">Jelszó megváltoztatása</h5>
+                <form onSubmit={handleChangePassword}>
+                  <div className="mb-3">
+                    <label htmlFor="currentPwd" className="form-label">Jelenlegi jelszó</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      id="currentPwd"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="newPassword" className="form-label">Új jelszó</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      id="newPassword"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="confirmPassword" className="form-label">Új jelszó megerősítése</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      id="confirmPassword"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+                    {loading ? "Folyamatban..." : "Jelszó módosítása"}
+                  </button>
+                </form>
               </div>
-              <button type="submit" disabled={loading}>
-                {loading ? "Folyamatban..." : "Jelszó módosítása"}
-              </button>
-            </form>
+            </div>
           </div>
         </div>
       </div>
+
+      <style>{`
+        @media (min-width: 992px) {
+          .container-fluid {
+            margin-left: 250px !important;
+          }
+        }
+        
+        @media (max-width: 991.98px) {
+          .container-fluid {
+            margin-left: 0 !important;
+          }
+          
+          .text-center, .mx-auto {
+            padding: 80px 20px 20px 20px !important;
+          }
+          
+          .alert {
+            margin-left: 20px !important;
+            margin-right: 20px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

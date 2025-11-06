@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "mathhero-69c73"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }

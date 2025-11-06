@@ -71,9 +71,87 @@ const questions = [
   }
 ];
 
+const Sidebar = ({ onLogout, sidebarOpen, setSidebarOpen }) => {
+  const navigate = useNavigate();
+
+  return (
+    <>
+      <div
+        className={`bg-dark text-white ${sidebarOpen ? '' : 'd-none d-lg-flex'}`}
+        style={{
+          width: '250px',
+          position: 'fixed',
+          height: '100vh',
+          overflowY: 'auto',
+          zIndex: 1050,
+          flexDirection: 'column'
+        }}
+      >
+        <div className="text-center py-4">
+          <img src={cat} alt="MathHero" style={{ width: '65px', height: '65px' }} />
+          <h5 className="mt-2 mb-0">MATHHERO</h5>
+        </div>
+        <hr className="border-secondary mx-3" />
+        <div className="flex-grow-1">
+          <div
+            className="d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded text-white-50"
+            style={{ cursor: 'pointer' }}
+            onClick={() => { navigate("/dashboard"); setSidebarOpen(false); }}
+          >
+            <span style={{ fontSize: '20px' }}>👤</span>
+            <span>Felhasználó</span>
+          </div>
+          <div
+            className="d-flex align-items-center gap-3 px-3 py-2 mx-2 mt-2 rounded bg-secondary bg-opacity-25 text-white"
+            style={{ cursor: 'pointer' }}
+            onClick={() => { navigate("/practice"); setSidebarOpen(false); }}
+          >
+            <span style={{ fontSize: '20px' }}>⭐</span>
+            <span>Gyakorlás</span>
+          </div>
+        </div>
+        <div className="mt-auto">
+          <hr className="border-secondary mx-3" />
+          <div
+            className="d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded text-white-50"
+            style={{ cursor: 'pointer' }}
+            onClick={() => { navigate("/settings"); setSidebarOpen(false); }}
+          >
+            <span style={{ fontSize: '20px' }}>⚙️</span>
+            <span>Beállítások</span>
+          </div>
+          <div
+            className="d-flex align-items-center gap-3 px-3 py-2 mx-2 mt-2 mb-3 rounded text-white-50"
+            style={{ cursor: 'pointer' }}
+            onClick={onLogout}
+          >
+            <span style={{ fontSize: '20px' }}>🚪</span>
+            <span>Kijelentkezés</span>
+          </div>
+        </div>
+      </div>
+      {sidebarOpen && (
+        <div
+          className="d-lg-none"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            zIndex: 1040
+          }}
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+    </>
+  );
+};
+
 const FourthGrade = ({ username, onLogout }) => {
   const navigate = useNavigate();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Átálltunk erre
   const [showConfirmation, setShowConfirmation] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(180);
@@ -94,10 +172,6 @@ const FourthGrade = ({ username, onLogout }) => {
       setSortedItems(Array(questions[4].items.length).fill(null));
     }
   }, [currentQuestionIndex, testActive]);
-
-  const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
-  };
 
   const handleLogout = () => {
     const confirmLogout = window.confirm("Biztosan ki szeretne jelentkezni?");
@@ -178,16 +252,25 @@ const FourthGrade = ({ username, onLogout }) => {
   const handleDragEnter = (e, position) => {
     e.preventDefault();
     dragOverItem.current = position;
-    e.target.classList.add('highlight');
+    const slotElement = e.target.closest('.sorting-slot');
+    if (slotElement) {
+      slotElement.classList.add('highlight');
+    }
   };
 
   const handleDragLeave = (e) => {
-    e.target.classList.remove('highlight');
+    const slotElement = e.target.closest('.sorting-slot');
+    if (slotElement) {
+      slotElement.classList.remove('highlight');
+    }
   };
 
   const handleDrop = (e, slotIndex) => {
     e.preventDefault();
-    e.target.classList.remove('highlight');
+    const slotElement = e.target.closest('.sorting-slot');
+    if (slotElement) {
+      slotElement.classList.remove('highlight');
+    }
     
     if (!dragItem.current) return;
     
@@ -355,319 +438,350 @@ const FourthGrade = ({ username, onLogout }) => {
     
     const isCorrect = question.options.find(opt => opt.id === optionId).isCorrect;
     
+    let classes = "p-3 border rounded-3";
+    
     if (optionId === userAnswerId) {
-      if (isCorrect) {
-        return "option-result correct-answer user-selected";
-      } 
-      else {
-        return "option-result incorrect-answer user-selected";
-      }
+      classes += isCorrect ? " border-success bg-success-subtle fw-bold" : " border-danger bg-danger-subtle fw-bold";
     } 
     else if (isCorrect) {
-      return "option-result correct-answer";
+      classes += " border-success bg-success-subtle";
     }
     else {
-      return "option-result";
+      classes += " bg-light";
     }
+    return classes;
   };
 
+  let mainContentClass = "flex-grow-1 d-flex";
+  let mainContentStyle = {
+    overflowY: 'auto',
+    backgroundColor: '#f3f4f6' 
+  };
+
+  if (!testActive && !testFinished) {
+    mainContentClass += " desktop-content align-items-center justify-content-center";
+  } else {
+    mainContentClass += " flex-column align-items-center py-5 px-3";
+    mainContentStyle.backgroundColor = '#f8f9fa'; 
+  }
+
   return (
-    <div className="dashboard-container">
-      <div className={`sidebar ${sidebarCollapsed ? "collapsed" : ""}`}>
-        {sidebarCollapsed && (
-          <div
-            className="hamburger-icon"
-            onClick={toggleSidebar}
-            role="button"
-            tabIndex={0}
-            aria-label="Expand sidebar"
-          >
-            ☰
+    <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: '#f3f4f6' }}>
+      
+      {!testActive && !testFinished && (
+        <>
+          <Sidebar 
+            onLogout={handleLogout} 
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+          />
+          <div className="d-lg-none">
+            <button 
+              className="btn btn-primary rounded-circle m-3"
+              style={{ width: '50px', height: '50px', position: 'fixed', zIndex: 1060 }}
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            >
+              ☰
+            </button>
           </div>
-        )}
+        </>
+      )}
 
-        {!sidebarCollapsed && (
-          <button
-            className="sidebar-toggle"
-            onClick={toggleSidebar}
-            aria-label="Collapse sidebar"
-          >
-            ☰
-          </button>
-        )}
-
-        <div className="logo">
-          <img src={cat} alt="MathHero" />
-          <h1>MATHHERO</h1>
-        </div>
-
-        <hr className="menu-divider top" />
-
-        <div className="menu-items">
-          <div className="menu-item" onClick={() => navigate("/dashboard")}>
-            <span className="icon">👤</span>
-            <span>Felhasználó</span>
-          </div>
-          <div className="menu-item" onClick={() => navigate("/practice")}>
-            <span className="icon">⭐</span>
-            <span>Gyakorlás</span>
-          </div>
-        </div>
-
-        <div className="menu-items bottom-menu">
-          <hr className="menu-divider bottom" />
-          <div className="menu-item" onClick={() => navigate("/settings")}>
-            <span className="icon">⚙️</span>
-            <span>Beállítások</span>
-          </div>
-          <div className="menu-item" onClick={handleLogout}>
-            <span className="icon">🚪</span>
-            <span>Kijelentkezés</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="main-content">
+      <div className={mainContentClass} style={mainContentStyle}>
+        
         {showConfirmation && (
-          <div className="confirmation-overlay">
-            <div className="confirmation-modal">
-              <h3>Teszt indítása</h3>
-              <p>Biztos el szeretnéd indítani a negyedik évfolyamosoknak szóló tesztet?</p>
-              <div className="confirmation-buttons">
-                <button className="confirm-button" onClick={startTest}>Igen</button>
-                <button className="cancel-button" onClick={cancelTest}>Nem</button>
+          <div 
+            className="modal" 
+            style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }} 
+            tabIndex="-1"
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content shadow-lg p-4 rounded-3 text-center">
+                <div className="modal-body">
+                  <h3 className="mb-3">Teszt indítása</h3>
+                  <p className="fs-5 mb-4">Biztos el szeretnéd indítani a negyedik évfolyamosoknak szóló tesztet?</p>
+                  <div className="d-flex justify-content-center gap-3">
+                    <button className="btn btn-success btn-lg" onClick={startTest}>Igen</button>
+                    <button className="btn btn-danger btn-lg" onClick={cancelTest}>Nem</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         )}
 
         {testActive && (
-          <div className="test-container">
-            <div className="timer-section">
-              <div className="progress-container">
-                <div 
-                  className="progress-bar" 
-                  style={{ width: `${(timeLeft / 180) * 100}%` }}
-                ></div>
+          <div className="card test-card-container shadow-lg p-3 p-sm-4 p-md-5 rounded-3 w-100" style={{ maxWidth: '800px' }}>
+            <div className="card-body">
+              <div className="mb-4">
+                <div className="progress" style={{ height: '10px' }}>
+                  <div 
+                    className="progress-bar" 
+                    role="progressbar"
+                    style={{ width: `${(timeLeft / 180) * 100}%` }}
+                    aria-valuenow={timeLeft}
+                    aria-valuemin="0"
+                    aria-valuemax="180"
+                  ></div>
+                </div>
+                <div className="text-center fs-5 fw-bold my-3">
+                  {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                </div>
               </div>
-              <div className="countdown">{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</div>
-            </div>
-            
-            <div className="question-section">
-              <h3>Kérdés {currentQuestionIndex + 1} / {questions.length}</h3>
-              <div className="question">{currentQuestion.question}</div>
               
-              <div className="question-image">
-                <img src={currentQuestion.image} alt="Kérdés illusztráció" />
-              </div>
-              <p className="image-source">Kép forrása: https://www.tankonyvkatalogus.hu/storage/pdf/OH-MAT04MA_II__teljes.pdf</p>
-              
-              {currentQuestion.type !== "sorting" && (
-                <div className="options-container">
-                  {currentQuestion.options.map((option) => (
-                    <div 
-                      key={option.id}
-                      className="option"
-                      onClick={() => handleAnswerClick(option.isCorrect, option.id)}
-                    >
-                      {option.text}
+              <div className="question-section">
+                <h3 className="h5 text-muted text-center">Kérdés {currentQuestionIndex + 1} / {questions.length}</h3>
+                <h2 className="h3 text-center mb-4">{currentQuestion.question}</h2>
+                
+                <div className="text-center mb-3">
+                  <img 
+                    src={currentQuestion.image} 
+                    alt="Kérdés illusztráció" 
+                    className="img-fluid rounded-3"
+                    style={{ maxHeight: '250px', border: '1px solid #ddd' }}
+                  />
+                </div>
+                <p className="text-center text-muted fst-italic small mb-4 mt-n2">Kép forrása: tankonyvkatalogus.hu</p>
+                
+                {currentQuestion.type !== "sorting" && (
+                  <div className="row g-3">
+                    {currentQuestion.options.map((option) => (
+                      <div key={option.id} className="col-12 col-md-6">
+                        <button 
+                          className="btn btn-outline-primary btn-lg w-100 p-3"
+                          onClick={() => handleAnswerClick(option.isCorrect, option.id)}
+                        >
+                          {option.text}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {currentQuestion.type === "sorting" && (
+                  <div className="sorting-container">
+                    <div className="alert alert-info text-center">
+                      Húzd az állatok neveit méretük szerint csökkenő sorrendbe. 
                     </div>
-                  ))}
-                </div>
-              )}
-              
-              {currentQuestion.type === "sorting" && (
-                <div className="sorting-container">
-                  <div className="sorting-instructions">
-                    Húzd az állatok neveit méretük szerint csökkenő sorrendbe. 
-                  </div>
+                    
                   
-                  <div className="sorting-items-container">
-                    {availableItems.map((item, index) => (
-                      <div
-                        key={item.id}
-                        className="sorting-item"
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, item, index)}
-                        onDragEnd={handleDragEnd}
-                      >
-                        {item.value}
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="sorting-slots">
-                    {sortedItems.map((item, index) => (
-                      <div
-                        key={`slot-${index}`}
-                        className="sorting-slot"
-                        onDragOver={handleDragOver}
-                        onDragEnter={(e) => handleDragEnter(e, index)}
-                        onDragLeave={handleDragLeave}
-                        onDrop={(e) => handleDrop(e, index)}
-                      >
-                        <div className="sorting-slot-number">{index + 1}</div>
-                        {item && (
-                          <div 
-                            className="sorting-item-in-slot"
-                            draggable
-                            onDragStart={(e) => handleDragStart(e, item, index, false)}
-                            onDragEnd={handleDragEnd}
-                            onClick={() => handleRemoveFromSorted(index)}
+                    <div className="d-flex flex-wrap justify-content-center gap-3 mb-4 p-3 bg-light rounded-3">
+                      {availableItems.map((item, index) => (
+                        <div
+                          key={item.id}
+                          className="btn btn-light border shadow-sm sorting-item"
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, item, index)}
+                          onDragEnd={handleDragEnd}
+                        >
+                          {item.value}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="row g-3 justify-content-center mb-4 w-100">
+                      {sortedItems.map((item, index) => (
+                        <div
+                          key={`slot-${index}`}
+                          className="col-10 col-md-4 col-lg-2"
+                        >
+                          <div
+                            className="sorting-slot d-flex align-items-center justify-content-center border-dashed rounded-3 position-relative"
+                            style={{ minHeight: '60px' }}
+                            onDragOver={handleDragOver}
+                            onDragEnter={(e) => handleDragEnter(e, index)}
+                            onDragLeave={handleDragLeave}
+                            onDrop={(e) => handleDrop(e, index)}
                           >
-                            {item.value}
+                            <span className="badge bg-primary rounded-pill position-absolute top-0 start-50 translate-middle">
+                              {index + 1}
+                            </span>
+                            {item && (
+                              <div 
+                                className="btn btn-primary w-100 h-100 d-flex align-items-center justify-content-center"
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, item, index, false)}
+                                onDragEnd={handleDragEnd}
+                                onClick={() => handleRemoveFromSorted(index)}
+                              >
+                                {item.value}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    ))}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <button 
+                      className="btn btn-primary btn-lg mt-3"
+                      onClick={handleSubmitOrder}
+                      disabled={sortedItems.includes(null)}
+                    >
+                      Rendezés megerősítése
+                    </button>
                   </div>
-                  
-                  <button 
-                    className="submit-order-button"
-                    onClick={handleSubmitOrder}
-                    disabled={sortedItems.includes(null)}
-                  >
-                    Rendezés megerősítése
-                  </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         )}
 
         {testFinished && (
-          <div className="test-results">
-            <h2>Teszt befejezve!</h2>
-            <div className="results-summary">
-              <p>Helyes válaszok: <span className="correct-count">{correctAnswers}</span></p>
-              <p>Helytelen válaszok: <span className="incorrect-count">{incorrectAnswers}</span></p>
-            </div>
-            <div className="results-actions">
-              <button className="restart-button" onClick={restartTest}>Teszt újraindítása</button>
-              <button className="dashboard-button" onClick={goToDashboard}>Vissza a kezdőlapra</button>
-            </div>
-            
-            <div className="detailed-results">
-              <h3>Részletes eredmények</h3>
-              <p className="scroll-hint">Görgess lejjebb a részletes elemzésért</p>
+          <div className="card test-card-container shadow-lg p-3 p-sm-4 p-md-5 rounded-3 w-100 text-center" style={{ maxWidth: '800px' }}>
+            <div className="card-body">
+              <h2 className="mb-4">Teszt befejezve!</h2>
+              <div className="mb-4">
+                <p className="fs-4 mb-2">Helyes válaszok: <span className="text-success fw-bold">{correctAnswers}</span></p>
+                <p className="fs-4">Helytelen válaszok: <span className="text-danger fw-bold">{incorrectAnswers}</span></p>
+              </div>
+              <div className="d-flex flex-column flex-sm-row justify-content-center gap-3 mb-4">
+                <button className="btn btn-primary btn-lg" onClick={restartTest}>Teszt újraindítása</button>
+                <button className="btn btn-secondary btn-lg" onClick={goToDashboard}>Vissza a kezdőlapra</button>
+              </div>
               
-              {questions.map((question, index) => {
-                const userAnswer = userAnswers[index];
+              <hr className="my-4" />
+              
+              <div className="detailed-results text-start mt-4">
+                <h3 className="text-center mb-3">Részletes eredmények</h3>
+                <p className="text-center text-muted fst-italic mb-4">Görgess lejjebb a részletes elemzésért</p>
                 
-                if (question.type === "sorting") {
-                  return (
-                    <div key={index} className="question-result">
-                      <h4>Kérdés {index + 1}</h4>
-                      <div className="question-status">
-                        {userAnswer === null && (
-                          <span className="no-answer">Nem válaszoltál erre a kérdésre</span>
-                        )}
-                        {userAnswer && userAnswer.timeout && (
-                          <span className="timeout">Lejárt az idő</span>
-                        )}
-                        {userAnswer && !userAnswer.timeout && (
-                          <span className={userAnswer.isCorrect ? "correct" : "incorrect"}>
-                            {userAnswer.isCorrect ? "Helyes válasz" : "Helytelen válasz"}
-                          </span>
-                        )}
-                      </div>
-                      
-                      <div className="question-text">{question.question}</div>
-                      
-                      <div className="question-image">
-                        <img src={question.image} alt="Kérdés illusztráció" />
-                      </div>
-                      
-                      {userAnswer && !userAnswer.timeout && (
-                        <div className="sorting-result-container">
-                          <h4>A te rendezésed:</h4>
-                          <div className="sorting-result-row">
-                            {userAnswer.order.map((itemId, idx) => {
-                              const item = question.items.find(i => i.id === itemId);
-                              const correctPosition = question.correctOrder.indexOf(itemId);
-                              const isCorrectPosition = correctPosition === idx;
-                              
-                              return (
-                                <div key={idx} className="sorting-result-item">
-                                  <div className="sorting-result-position">{idx + 1}. hely</div>
-                                  <div className={`sorting-result-value ${isCorrectPosition ? 'correct-position' : 'incorrect-position'}`}>
-                                    {item ? item.value : '?'}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          
-                          <h4>Helyes sorrend:</h4>
-                          <div className="sorting-result-row">
-                            {question.correctOrder.map((itemId, idx) => {
-                              const item = question.items.find(i => i.id === itemId);
-                              return (
-                                <div key={idx} className="sorting-result-item">
-                                  <div className="sorting-result-position">{idx + 1}. hely</div>
-                                  <div className="sorting-result-value correct-position">
-                                    {item ? item.value : '?'}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
-                
-                else {
-                  const correctOption = question.options.find(opt => opt.isCorrect);
-                  const userSelectedOption = userAnswer !== "timeout" 
-                    ? question.options.find(opt => opt.id === userAnswer) 
-                    : null;
+                {questions.map((question, index) => {
+                  const userAnswer = userAnswers[index];
                   
-                  return (
-                    <div key={index} className="question-result">
-                      <h4>Kérdés {index + 1}</h4>
-                      <div className="question-status">
-                        {userAnswer === null && (
-                          <span className="no-answer">Nem válaszoltál erre a kérdésre</span>
-                        )}
-                        {userAnswer === "timeout" && (
-                          <span className="timeout">Lejárt az idő</span>
-                        )}
-                        {userAnswer !== null && userAnswer !== "timeout" && (
-                          <span className={userSelectedOption?.isCorrect ? "correct" : "incorrect"}>
-                            {userSelectedOption?.isCorrect ? "Helyes válasz" : "Helytelen válasz"}
-                          </span>
-                        )}
-                      </div>
-                      
-                      <div className="question-text">{question.question}</div>
-                      
-                      <div className="question-image">
-                        <img src={question.image} alt="Kérdés illusztráció" />
-                      </div>
-                      <p className="image-source">Kép forrása: https://www.tankonyvkatalogus.hu/storage/pdf/OH-MAT04MA_II__teljes.pdf</p>
-
-                      <div className="options-container-result">
-                        {question.options.map((option) => (
-                          <div 
-                            key={option.id}
-                            className={getOptionStyle(question, option.id)}
-                          >
-                            {option.text}
-                            {option.isCorrect && <span className="correct-mark">✓</span>}
-                            {!option.isCorrect && userAnswer === option.id && <span className="incorrect-mark">✗</span>}
+                  if (question.type === "sorting") {
+                    const userAnswerOrder = (userAnswer && userAnswer.order) || [];
+                    return (
+                      <div key={index} className="mb-5">
+                        <h4 className="mb-3">Kérdés {index + 1}</h4>
+                        <div className="fs-5 fw-bold d-block mb-3">
+                          {userAnswer === null && (
+                            <span className="text-muted">Nem válaszoltál erre a kérdésre</span>
+                          )}
+                          {userAnswer && userAnswer.timeout && (
+                            <span className="text-warning">Lejárt az idő</span>
+                          )}
+                          {userAnswer && !userAnswer.timeout && (
+                            <span className={userAnswer.isCorrect ? "text-success" : "text-danger"}>
+                              {userAnswer.isCorrect ? "Helyes válasz" : "Helytelen válasz"}
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="fs-5 mb-3">{question.question}</div>
+                        <div className="text-center mb-3">
+                          <img src={question.image} alt="Kérdés illusztráció" className="img-fluid rounded-3" style={{ maxHeight: '200px' }} />
+                        </div>
+                        
+                        {userAnswer && !userAnswer.timeout && (
+                          <div className="d-flex flex-column align-items-center mt-3">
+                            <h5 className="h6 text-muted">A TE RENDEZÉSED:</h5>
+                            <div className="d-flex flex-wrap justify-content-center gap-2 mb-3">
+                              {userAnswerOrder.map((itemId, idx) => {
+                                const item = question.items.find(i => i.id === itemId);
+                                const isCorrectPosition = question.correctOrder.indexOf(itemId) === idx;
+                                return (
+                                  <div key={idx} className="text-center">
+                                    <div className="small text-muted">{idx + 1}. hely</div>
+                                    <div className={`p-2 border rounded-3 ${isCorrectPosition ? 'border-success bg-success-subtle' : 'border-danger bg-danger-subtle'}`}>
+                                      {item ? item.value : '?'}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            
+                            <h5 className="h6 text-muted">HELYES SORREND:</h5>
+                            <div className="d-flex flex-wrap justify-content-center gap-2">
+                              {question.correctOrder.map((itemId, idx) => {
+                                const item = question.items.find(i => i.id === itemId);
+                                return (
+                                  <div key={idx} className="text-center">
+                                    <div className="small text-muted">{idx + 1}. hely</div>
+                                    <div className="p-2 border rounded-3 border-success bg-success-subtle">
+                                      {item ? item.value : '?'}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
-                        ))}
+                        )}
+                        <hr className="mt-5" />
                       </div>
-                    </div>
-                  );
-                }
-              })}
+                    );
+                  }
+                  
+                  else {
+                    const userSelectedOption = userAnswer !== "timeout" 
+                      ? question.options.find(opt => opt.id === userAnswer) 
+                      : null;
+                    
+                    return (
+                      <div key={index} className="mb-5">
+                        <h4 className="mb-3">Kérdés {index + 1}</h4>
+                        <div className="fs-5 fw-bold d-block mb-3">
+                          {userAnswer === null && (
+                            <span className="text-muted">Nem válaszoltál erre a kérdésre</span>
+                          )}
+                          {userAnswer === "timeout" && (
+                            <span className="text-warning">Lejárt az idő</span>
+                          )}
+                          {userAnswer !== null && userAnswer !== "timeout" && (
+                            <span className={userSelectedOption?.isCorrect ? "text-success" : "text-danger"}>
+                              {userSelectedOption?.isCorrect ? "Helyes válasz" : "Helytelen válasz"}
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="fs-5 mb-3">{question.question}</div>
+                        <div className="text-center mb-3">
+                          <img src={question.image} alt="Kérdés illusztráció" className="img-fluid rounded-3" style={{ maxHeight: '200px' }} />
+                        </div>
+                        <p className="text-center text-muted fst-italic small mb-4 mt-n2">Kép forrása: tankonyvkatalogus.hu</p>
+
+                        <div className="row g-3">
+                          {question.options.map((option) => (
+                            <div key={option.id} className="col-12 col-md-6 position-relative">
+                              <div className={getOptionStyle(question, option.id)}>
+                                {option.text}
+                                {option.isCorrect && 
+                                  <span className="position-absolute top-0 end-0 p-2 fs-4 text-success">✓</span>
+                                }
+                                {!option.isCorrect && userAnswer === option.id && 
+                                  <span className="position-absolute top-0 end-0 p-2 fs-4 text-danger">✗</span>
+                                }
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <hr className="mt-5" />
+                      </div>
+                    );
+                  }
+                })}
+              </div>
             </div>
           </div>
         )}
       </div>
+
+      <style>{`
+        @media (min-width: 992px) {
+          .desktop-content {
+            margin-left: 250px !important;
+          }
+        }
+        
+        @media (max-width: 991.98px) {
+          .desktop-content {
+            margin-left: 0 !important;
+          }
+          /* Padding-ot adunk, hogy a mobil hamburger gomb ne takarja ki a tartalmat */
+          .desktop-content > .modal {
+             padding-top: 80px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

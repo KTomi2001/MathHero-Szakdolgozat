@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import "./Footer.css";
 import Authentication from "../Login/Authentication";
 
 const Footer = () => {
@@ -22,19 +21,20 @@ const Footer = () => {
   };
 
   return (
-    <footer className="mathhero-footer">
+    <footer className="mathhero-footer bg-dark text-white-50 py-4">
       <div className="container">
-          <div className="col-12">
-            <div className="footer-bottom">
-              <p className="text-center w-100">
-                A webalkalmazás / szakdolgozat készítője Keresztes Tamás, a Dunaújvárosi Egyetem hallgatója.
-              </p>
-            </div>
+        <div className="row">
+          <div className="col-12 text-center">
+            <p className="small mb-0">
+              A webalkalmazás / szakdolgozat készítője Keresztes Tamás, a
+              Dunaújvárosi Egyetem hallgatója.
+            </p>
           </div>
+        </div>
       </div>
 
-      <Authentication 
-        isOpen={isAuthOpen} 
+      <Authentication
+        isOpen={isAuthOpen}
         onClose={handleCloseAuth}
         initialAuthMode={authMode}
       />

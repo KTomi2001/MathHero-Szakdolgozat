@@ -14,27 +14,22 @@ const Header = () => {
   };
 
   return (
-    <header className="mathhero-header">
+    <header className="navbar navbar-expand navbar-dark bg-mathhero-primary shadow-sm fixed-top">
       <div className="container">
-        <div className="row">
-          <div className="col-6">
-            <div className="logo middle">MATHHERO</div>
-          </div>
-          <div className="col-6 nav-container">
-            <nav className="header-nav">
-              <a
-                href="#"
-                className="nav-link"
-                onClick={(e) => {
-                  e.preventDefault();
-                  openAuthModal();
-                }}
-              >
-                Bejelentkezés
-              </a>
-            </nav>
-          </div>
-        </div>
+        <a className="navbar-brand fw-bold fs-4" href="#">
+          MATHHERO
+        </a>
+        <nav className="navbar-nav ms-auto">
+          <button
+            className="nav-link btn btn-link text-white"
+            onClick={(e) => {
+              e.preventDefault();
+              openAuthModal();
+            }}
+          >
+            Bejelentkezés
+          </button>
+        </nav>
       </div>
 
       <Auth isOpen={isAuthModalOpen} onClose={closeAuthModal} />

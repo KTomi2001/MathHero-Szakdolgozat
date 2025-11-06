@@ -26,6 +26,17 @@ const Auth = ({ isOpen, onClose, initialAuthMode = "login" }) => {
     }
   }, [initialAuthMode]);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleLogin = async (e) => {
@@ -117,17 +128,27 @@ const Auth = ({ isOpen, onClose, initialAuthMode = "login" }) => {
     }
   };
 
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="auth-modal-overlay">
+    <div className="auth-modal-overlay" onClick={handleBackdropClick}>
       <div className="auth-modal-backdrop" onClick={onClose}></div>
       <div className="auth-modal-container">
         <div className="auth-modal-header">
-          <button onClick={onClose} className="auth-modal-close">
+          <button 
+            onClick={onClose} 
+            className="auth-modal-close"
+            aria-label="Bezárás"
+          >
             <i className="bi bi-x-lg"></i>
           </button>
         </div>
 
-        {error && <div className="alert alert-danger">{error}</div>}
+        {error && <div className="alert alert-danger" role="alert">{error}</div>}
 
         {authMode === "login" ? (
           <div className="auth-form-container">
@@ -137,7 +158,7 @@ const Auth = ({ isOpen, onClose, initialAuthMode = "login" }) => {
             </div>
 
             <form onSubmit={handleLogin} className="auth-form">
-              <div className="form-group mb-3">
+              <div className="form-group">
                 <div className="input-container">
                   <i className="bi bi-envelope input-icon"></i>
                   <input
@@ -148,10 +169,11 @@ const Auth = ({ isOpen, onClose, initialAuthMode = "login" }) => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    autoComplete="email"
                   />
                 </div>
               </div>
-              <div className="form-group mb-4">
+              <div className="form-group">
                 <div className="input-container">
                   <i className="bi bi-key input-icon"></i>
                   <input
@@ -162,6 +184,7 @@ const Auth = ({ isOpen, onClose, initialAuthMode = "login" }) => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    autoComplete="current-password"
                   />
                 </div>
               </div>
@@ -179,6 +202,7 @@ const Auth = ({ isOpen, onClose, initialAuthMode = "login" }) => {
               <button
                 onClick={() => setAuthMode("register")}
                 className="auth-switch-button"
+                type="button"
               >
                 Regisztráció
               </button>
@@ -192,7 +216,7 @@ const Auth = ({ isOpen, onClose, initialAuthMode = "login" }) => {
             </div>
 
             <form onSubmit={handleRegister} className="auth-form">
-              <div className="form-group mb-3">
+              <div className="form-group">
                 <div className="input-container">
                   <i className="bi bi-person input-icon"></i>
                   <input
@@ -203,10 +227,11 @@ const Auth = ({ isOpen, onClose, initialAuthMode = "login" }) => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
+                    autoComplete="username"
                   />
                 </div>
               </div>
-              <div className="form-group mb-3">
+              <div className="form-group">
                 <div className="input-container">
                   <i className="bi bi-envelope input-icon"></i>
                   <input
@@ -217,10 +242,11 @@ const Auth = ({ isOpen, onClose, initialAuthMode = "login" }) => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    autoComplete="email"
                   />
                 </div>
               </div>
-              <div className="form-group mb-4">
+              <div className="form-group">
                 <div className="input-container">
                   <i className="bi bi-key input-icon"></i>
                   <input
@@ -231,6 +257,7 @@ const Auth = ({ isOpen, onClose, initialAuthMode = "login" }) => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    autoComplete="new-password"
                   />
                 </div>
               </div>
@@ -248,6 +275,7 @@ const Auth = ({ isOpen, onClose, initialAuthMode = "login" }) => {
               <button
                 onClick={() => setAuthMode("login")}
                 className="auth-switch-button"
+                type="button"
               >
                 Bejelentkezés
               </button>
