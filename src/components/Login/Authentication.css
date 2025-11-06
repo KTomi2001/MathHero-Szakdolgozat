@@ -256,7 +256,6 @@
   border-color: #f5c6cb;
 }
 
-/* Tablet nézet */
 @media (max-width: 768px) {
   .auth-modal-overlay {
     padding: 12px;
@@ -277,13 +276,9 @@
   }
 }
 
-/* Mobilos nézet */
 @media (max-width: 480px) {
   .auth-modal-overlay {
     padding: 8px;
-    /* align-items: flex-start;  <- Eltávolítva */
-    /* padding-top: 20px;       <- Eltávolítva */
-    /* Így megmarad a függőleges központosítás */
   }
   
   .auth-modal-container {
@@ -359,11 +354,9 @@
   }
 }
 
-/* Kis telefonok (360px és kisebb) */
 @media (max-width: 375px) {
   .auth-modal-overlay {
     padding: 6px;
-    /* padding-top: 15px;  <- Eltávolítva */
   }
   
   .auth-modal-container {
@@ -423,7 +416,6 @@
   }
 }
 
-/* Landscape orientáció kis magasságú eszközökön */
 @media (max-height: 600px) and (orientation: landscape) {
   .auth-modal-overlay {
     padding: 8px;
@@ -477,7 +469,6 @@
   }
 }
 
-/* Nagyon kis magasságú landscape */
 @media (max-height: 480px) and (orientation: landscape) {
   .auth-logo {
     max-width: 120px;
@@ -514,7 +505,6 @@
   }
 }
 
-/* Csökkentett animáció beállítás */
 @media (prefers-reduced-motion: reduce) {
   .auth-modal-container,
   .input-container,
@@ -535,7 +525,6 @@
   }
 }
 
-/* Touch device optimalizáció */
 @media (hover: none) and (pointer: coarse) {
   .auth-modal-container:hover {
     transform: none;
@@ -562,7 +551,6 @@
   }
 }
 
-/* Scrollbar stílus a modal konténerhez */
 .auth-modal-container::-webkit-scrollbar {
   width: 6px;
 }
