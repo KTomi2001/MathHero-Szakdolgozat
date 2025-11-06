@@ -3,23 +3,27 @@ import { useNavigate } from "react-router-dom";
 import cat from "../../assets/MainPage/cat.svg";
 import { auth, db } from "../../firebase";
 import "./DashboardSettings.css";
-import { 
-  updateProfile, 
-  updateEmail, 
-  updatePassword, 
-  signOut, 
+import {
+  updateEmail,
+  updatePassword,
+  signOut,
   sendEmailVerification,
   reauthenticateWithCredential,
-  EmailAuthProvider
+  EmailAuthProvider,
 } from "firebase/auth";
-import { doc, getDoc, updateDoc, collection, query, where, getDocs } from "firebase/firestore";
+import {
+  doc,
+  updateDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 
 const DashboardSettings = ({ username, onLogout }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [displayName, setDisplayName] = useState(username || "");
-  const [originalDisplayName, setOriginalDisplayName] = useState(""); 
   const [email, setEmail] = useState("");
-  const [originalEmail, setOriginalEmail] = useState(""); 
+  const [originalEmail, setOriginalEmail] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -38,14 +42,12 @@ const DashboardSettings = ({ username, onLogout }) => {
           setEmailVerified(currentUser.emailVerified);
           setEmail(currentUser.email || "");
           setOriginalEmail(currentUser.email || "");
-          setDisplayName(currentUser.displayName || "");
-          setOriginalDisplayName(currentUser.displayName || "");
         }
       } catch (error) {
         console.error("Hiba a felhasználó adatainak lekérésekor:", error);
         setMessage({
           text: "Nem sikerült betölteni a felhasználói adatokat.",
-          type: "error"
+          type: "error",
         });
       }
     };
@@ -53,100 +55,39 @@ const DashboardSettings = ({ username, onLogout }) => {
     fetchUserData();
   }, []);
 
-  const checkUsernameExists = async (username) => {
-    if (username === originalDisplayName) {
-      return false;
-    }
-    
-    try {
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("username", "==", username));
-      const querySnapshot = await getDocs(q);
-      
-      return !querySnapshot.empty;
-    } catch (error) {
-      console.error("Hiba a felhasználónév ellenőrzésekor:", error);
-      return true; 
-    }
-  };
-
   const checkEmailExists = async (email) => {
     if (email === originalEmail) {
       return false;
     }
-    
+
     try {
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("email", "==", email));
       const querySnapshot = await getDocs(q);
-      
+
       return !querySnapshot.empty;
     } catch (error) {
       console.error("Hiba az email cím ellenőrzésekor:", error);
-      return true; 
+      return true;
     }
   };
 
   const reauthenticate = async (password) => {
     try {
       const currentUser = auth.currentUser;
-      const credential = EmailAuthProvider.credential(currentUser.email, password);
+      const credential = EmailAuthProvider.credential(
+        currentUser.email,
+        password
+      );
       await reauthenticateWithCredential(currentUser, credential);
       return true;
     } catch (error) {
       console.error("Újrahitelesítési hiba:", error);
       setMessage({
         text: "Helytelen jelenlegi jelszó. Kérjük, próbáld újra.",
-        type: "error"
+        type: "error",
       });
       return false;
-    }
-  };
-
-  const handleUpdateProfile = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage({ text: "", type: "" });
-
-    try {
-      const currentUser = auth.currentUser; 
-
-      if (currentUser.displayName !== displayName) {
-        const usernameExists = await checkUsernameExists(displayName);
-        
-        if (usernameExists) {
-          setMessage({
-            text: "Ez a felhasználónév már foglalt. Kérjük, válassz másikat.",
-            type: "error"
-          });
-          setLoading(false);
-          return;
-        }
-        
-        await updateProfile(currentUser, {
-          displayName: displayName
-        });
-
-        const userDocRef = doc(db, "users", currentUser.uid);
-        await updateDoc(userDocRef, {
-          username: displayName
-        });
-        
-        setOriginalDisplayName(displayName);
-      }
-      
-      setMessage({
-        text: "Profil sikeresen frissítve!",
-        type: "success"
-      });
-    } catch (error) {
-      console.error("Profil frissítési hiba:", error);
-      setMessage({
-        text: "Hiba történt a profil frissítésekor: " + error.message,
-        type: "error"
-      });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -159,7 +100,7 @@ const DashboardSettings = ({ username, onLogout }) => {
       if (!currentPassword) {
         setMessage({
           text: "Add meg a jelenlegi jelszavad az email cím módosításához.",
-          type: "error"
+          type: "error",
         });
         setLoading(false);
         return;
@@ -167,11 +108,11 @@ const DashboardSettings = ({ username, onLogout }) => {
 
       if (email !== originalEmail) {
         const emailExists = await checkEmailExists(email);
-        
+
         if (emailExists) {
           setMessage({
             text: "Ez az email cím már használatban van. Kérjük, válassz másikat.",
-            type: "error"
+            type: "error",
           });
           setLoading(false);
           return;
@@ -186,24 +127,24 @@ const DashboardSettings = ({ username, onLogout }) => {
 
       const currentUser = auth.currentUser;
       await updateEmail(currentUser, email);
-      
+
       const userDocRef = doc(db, "users", currentUser.uid);
       await updateDoc(userDocRef, { email: email });
-      
+
       setOriginalEmail(email);
-      
+
       await sendEmailVerification(currentUser);
 
       setMessage({
         text: "Email cím sikeresen frissítve! Kérjük, erősítsd meg az új email címed.",
-        type: "success"
+        type: "success",
       });
       setCurrentPassword("");
     } catch (error) {
       console.error("Email frissítési hiba:", error);
       setMessage({
         text: "Hiba történt az email cím frissítésekor: " + error.message,
-        type: "error"
+        type: "error",
       });
     } finally {
       setLoading(false);
@@ -218,7 +159,7 @@ const DashboardSettings = ({ username, onLogout }) => {
     if (newPassword !== confirmPassword) {
       setMessage({
         text: "Az új jelszavak nem egyeznek!",
-        type: "error"
+        type: "error",
       });
       setLoading(false);
       return;
@@ -236,7 +177,7 @@ const DashboardSettings = ({ username, onLogout }) => {
 
       setMessage({
         text: "Jelszó sikeresen megváltoztatva!",
-        type: "success"
+        type: "success",
       });
       setCurrentPassword("");
       setNewPassword("");
@@ -245,7 +186,7 @@ const DashboardSettings = ({ username, onLogout }) => {
       console.error("Jelszó módosítási hiba:", error);
       setMessage({
         text: "Hiba történt a jelszó módosításakor: " + error.message,
-        type: "error"
+        type: "error",
       });
     } finally {
       setLoading(false);
@@ -261,16 +202,16 @@ const DashboardSettings = ({ username, onLogout }) => {
       if (!currentUser) return;
 
       await sendEmailVerification(currentUser);
-      
+
       setMessage({
         text: "Megerősítő email újraküldve! Kérjük, ellenőrizd a postafiókod.",
-        type: "success"
+        type: "success",
       });
     } catch (error) {
       console.error("Email küldési hiba:", error);
       setMessage({
         text: "Hiba történt a megerősítő email küldésekor: " + error.message,
-        type: "error"
+        type: "error",
       });
     } finally {
       setLoading(false);
@@ -283,149 +224,183 @@ const DashboardSettings = ({ username, onLogout }) => {
       if (onLogout) {
         onLogout();
       } else {
-        signOut(auth).then(() => {
-          localStorage.removeItem("user");
-          localStorage.removeItem("token");
-          navigate("/");
-        }).catch((error) => {
-          console.error("Kijelentkezési hiba:", error);
-        });
+        signOut(auth)
+          .then(() => {
+            localStorage.removeItem("user");
+            localStorage.removeItem("token");
+            navigate("/");
+          })
+          .catch((error) => {
+            console.error("Kijelentkezési hiba:", error);
+          });
       }
     }
   };
 
   return (
-    <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: '#f3f4f6' }}>
-      <div 
-        className={`bg-dark text-white ${sidebarOpen ? '' : 'd-none d-lg-flex'}`}
+    <div
+      className="d-flex"
+      style={{ minHeight: "100vh", backgroundColor: "#f3f4f6" }}
+    >
+      <div
+        className={`bg-dark text-white ${
+          sidebarOpen ? "" : "d-none d-lg-flex"
+        }`}
         style={{
-          width: '250px',
-          position: 'fixed',
-          height: '100vh',
-          overflowY: 'auto',
+          width: "250px",
+          position: "fixed",
+          height: "100vh",
+          overflowY: "auto",
           zIndex: 1050,
-          flexDirection: 'column'
+          flexDirection: "column",
         }}
       >
         <div className="text-center py-4">
-          <img src={cat} alt="MathHero" style={{ width: '65px', height: '65px' }} />
+          <img
+            src={cat}
+            alt="MathHero"
+            style={{ width: "65px", height: "65px" }}
+          />
           <h5 className="mt-2 mb-0">MATHHERO</h5>
         </div>
-        
+
         <hr className="border-secondary mx-3" />
-        
+
         <div className="flex-grow-1">
-          <div 
+          <div
             className="d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded text-white-50"
-            style={{ cursor: 'pointer' }}
-            onClick={() => { navigate("/dashboard"); setSidebarOpen(false); }}
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              navigate("/dashboard");
+              setSidebarOpen(false);
+            }}
           >
-            <span style={{ fontSize: '20px' }}>👤</span>
+            <span style={{ fontSize: "20px" }}>👤</span>
             <span>Felhasználó</span>
           </div>
-          
-          <div 
+
+          <div
             className="d-flex align-items-center gap-3 px-3 py-2 mx-2 mt-2 rounded text-white-50"
-            style={{ cursor: 'pointer' }}
-            onClick={() => { navigate("/practice"); setSidebarOpen(false); }}
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              navigate("/practice");
+              setSidebarOpen(false);
+            }}
           >
-            <span style={{ fontSize: '20px' }}>⭐</span>
+            <span style={{ fontSize: "20px" }}>⭐</span>
             <span>Gyakorlás</span>
           </div>
         </div>
-        
+
         <div className="mt-auto">
           <hr className="border-secondary mx-3" />
-          
-          <div 
+
+          <div
             className="d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded bg-secondary bg-opacity-25 text-white"
-            style={{ cursor: 'pointer' }}
-            onClick={() => { navigate("/settings"); setSidebarOpen(false); }}
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              navigate("/settings");
+              setSidebarOpen(false);
+            }}
           >
-            <span style={{ fontSize: '20px' }}>⚙️</span>
+            <span style={{ fontSize: "20px" }}>⚙️</span>
             <span>Beállítások</span>
           </div>
-          
-          <div 
+
+          <div
             className="d-flex align-items-center gap-3 px-3 py-2 mx-2 mt-2 mb-3 rounded text-white-50"
-            style={{ cursor: 'pointer' }}
+            style={{ cursor: "pointer" }}
             onClick={handleLogout}
           >
-            <span style={{ fontSize: '20px' }}>🚪</span>
+            <span style={{ fontSize: "20px" }}>🚪</span>
             <span>Kijelentkezés</span>
           </div>
         </div>
       </div>
 
       {sidebarOpen && (
-        <div 
+        <div
           className="d-lg-none"
           style={{
-            position: 'fixed',
+            position: "fixed",
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            zIndex: 1040
+            backgroundColor: "rgba(0,0,0,0.5)",
+            zIndex: 1040,
           }}
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      <div className="flex-grow-1" style={{ marginLeft: '0' }}>
+      <div className="flex-grow-1" style={{ marginLeft: "0" }}>
         <div className="d-lg-none">
-          <button 
+          <button
             className="btn btn-primary rounded-circle m-3"
-            style={{ width: '50px', height: '50px', position: 'fixed', zIndex: 1060 }}
+            style={{
+              width: "50px",
+              height: "50px",
+              position: "fixed",
+              zIndex: 1060,
+            }}
             onClick={() => setSidebarOpen(!sidebarOpen)}
           >
             ☰
           </button>
         </div>
 
-        <div className="container-fluid" style={{ paddingLeft: '0', paddingRight: '0' }}>
-          <div className="text-center mb-4" style={{ paddingLeft: '20px', paddingRight: '20px', paddingTop: '20px' }}>
-            <h2 className="display-5 fw-bold text-dark">Felhasználói beállítások</h2>
+        <div
+          className="container-fluid"
+          style={{ paddingLeft: "0", paddingRight: "0" }}
+        >
+          <div
+            className="text-center mb-4"
+            style={{
+              paddingLeft: "20px",
+              paddingRight: "20px",
+              paddingTop: "20px",
+            }}
+          >
+            <h2 className="display-5 fw-bold text-dark">
+              Felhasználói beállítások
+            </h2>
           </div>
 
           {message.text && (
-            <div className={`alert ${message.type === 'success' ? 'alert-success' : 'alert-danger'} mx-auto`} style={{ maxWidth: '700px', marginLeft: '20px', marginRight: '20px' }}>
+            <div
+              className={`alert ${
+                message.type === "success" ? "alert-success" : "alert-danger"
+              } mx-auto`}
+              style={{
+                maxWidth: "700px",
+                marginLeft: "20px",
+                marginRight: "20px",
+              }}
+            >
               {message.text}
             </div>
           )}
 
-          <div className="mx-auto" style={{ maxWidth: '700px', paddingLeft: '20px', paddingRight: '20px', paddingBottom: '20px' }}>
+          <div
+            className="mx-auto"
+            style={{
+              maxWidth: "700px",
+              paddingLeft: "20px",
+              paddingRight: "20px",
+              paddingBottom: "20px",
+            }}
+          >
             <div className="card border-0 shadow-sm mb-4">
               <div className="card-body p-4">
-                <h5 className="card-title text-primary mb-4">Felhasználónév megváltoztatása</h5>
-                <form onSubmit={handleUpdateProfile}>
-                  <div className="mb-3">
-                    <label htmlFor="displayName" className="form-label">Felhasználónév</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="displayName"
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-                    {loading ? "Folyamatban..." : "Profil mentése"}
-                  </button>
-                </form>
-              </div>
-            </div>
-
-            <div className="card border-0 shadow-sm mb-4">
-              <div className="card-body p-4">
-                <h5 className="card-title text-primary mb-4">Email megváltoztatása</h5>
+                <h5 className="card-title text-primary mb-4">
+                  Email megváltoztatása
+                </h5>
                 {user && !emailVerified && (
                   <div className="alert alert-warning">
                     <p className="mb-2">Az email címed még nincs megerősítve.</p>
-                    <button 
-                      onClick={resendVerificationEmail} 
+                    <button
+                      onClick={resendVerificationEmail}
                       disabled={loading}
                       className="btn btn-sm btn-warning"
                     >
@@ -435,7 +410,9 @@ const DashboardSettings = ({ username, onLogout }) => {
                 )}
                 <form onSubmit={handleUpdateEmail}>
                   <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email</label>
+                    <label htmlFor="email" className="form-label">
+                      Email
+                    </label>
                     <input
                       type="email"
                       className="form-control"
@@ -446,7 +423,9 @@ const DashboardSettings = ({ username, onLogout }) => {
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="currentPassword" className="form-label">Jelenlegi jelszó</label>
+                    <label htmlFor="currentPassword" className="form-label">
+                      Jelenlegi jelszó
+                    </label>
                     <input
                       type="password"
                       className="form-control"
@@ -456,7 +435,11 @@ const DashboardSettings = ({ username, onLogout }) => {
                       required
                     />
                   </div>
-                  <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+                  <button
+                    type="submit"
+                    className="btn btn-primary w-100"
+                    disabled={loading}
+                  >
                     {loading ? "Folyamatban..." : "Email frissítése"}
                   </button>
                 </form>
@@ -465,10 +448,14 @@ const DashboardSettings = ({ username, onLogout }) => {
 
             <div className="card border-0 shadow-sm mb-4">
               <div className="card-body p-4">
-                <h5 className="card-title text-primary mb-4">Jelszó megváltoztatása</h5>
+                <h5 className="card-title text-primary mb-4">
+                  Jelszó megváltoztatása
+                </h5>
                 <form onSubmit={handleChangePassword}>
                   <div className="mb-3">
-                    <label htmlFor="currentPwd" className="form-label">Jelenlegi jelszó</label>
+                    <label htmlFor="currentPwd" className="form-label">
+                      Jelenlegi jelszó
+                    </label>
                     <input
                       type="password"
                       className="form-control"
@@ -479,7 +466,9 @@ const DashboardSettings = ({ username, onLogout }) => {
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="newPassword" className="form-label">Új jelszó</label>
+                    <label htmlFor="newPassword" className="form-label">
+                      Új jelszó
+                    </label>
                     <input
                       type="password"
                       className="form-control"
@@ -490,7 +479,9 @@ const DashboardSettings = ({ username, onLogout }) => {
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="confirmPassword" className="form-label">Új jelszó megerősítése</label>
+                    <label htmlFor="confirmPassword" className="form-label">
+                      Új jelszó megerősítése
+                    </label>
                     <input
                       type="password"
                       className="form-control"
@@ -500,7 +491,11 @@ const DashboardSettings = ({ username, onLogout }) => {
                       required
                     />
                   </div>
-                  <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+                  <button
+                    type="submit"
+                    className="btn btn-primary w-100"
+                    disabled={loading}
+                  >
                     {loading ? "Folyamatban..." : "Jelszó módosítása"}
                   </button>
                 </form>
