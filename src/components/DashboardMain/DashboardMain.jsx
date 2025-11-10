@@ -244,7 +244,7 @@ const Dashboard = ({ username, onLogout }) => {
             
             <div className="col-12 col-md-6 col-lg-6">
               <div className="card border-0 shadow-sm h-100">
-                <div className="card-body text-center p-3">
+                <div className="card-body d-flex flex-column align-items-center justify-content-center text-center p-3">
                   <div 
                     className="rounded-3 d-inline-flex align-items-center justify-content-center mb-2"
                     style={{ width: '60px', height: '60px', backgroundColor: '#eef2ff', color: '#4f46e5', fontSize: '24px' }}
@@ -294,7 +294,7 @@ const Dashboard = ({ username, onLogout }) => {
 
             <div className="col-12 col-md-6 col-lg-6">
               <div className="card border-0 shadow-sm h-100">
-                <div className="card-body text-center p-3">
+                <div className="card-body d-flex flex-column align-items-center justify-content-center text-center p-3">
                   <div 
                     className="rounded-3 d-inline-flex align-items-center justify-content-center mb-2"
                     style={{ width: '60px', height: '60px', backgroundColor: '#fffbeb', color: '#f59e0b', fontSize: '24px' }}
