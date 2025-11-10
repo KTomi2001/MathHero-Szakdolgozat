@@ -4,7 +4,7 @@ import cat from "../../assets/MainPage/cat.svg";
 import fourth_question from "../../assets/math/sixth/fourth_question.png";
 import { auth, db } from "../../firebase";
 import "./SixthGrade.css";
-import { doc, getDoc, updateDoc, increment } from "firebase/firestore";
+import { doc, getDoc, updateDoc, increment, setDoc } from "firebase/firestore";
 
 const questions = [
     {
@@ -75,7 +75,7 @@ const Sidebar = ({ onLogout, sidebarOpen, setSidebarOpen }) => {
         }}
       >
         <div className="text-center py-4">
-          <img src={cat} alt="MathHero" style={{ width: '65px', height: '65px' }} />
+          <img src={cat} alt="MathHero" style={{ width: '80px', height: '80px' }} />
           <h5 className="mt-2 mb-0">MATHHERO</h5>
         </div>
         <hr className="border-secondary mx-3" />
@@ -176,6 +176,7 @@ const SixthGrade = ({ username, onLogout }) => {
     if (!user) return;
 
     const userDocRef = doc(db, "users", user.uid);
+    const leaderboardDocRef = doc(db, "leaderboard", user.uid);
     
     try {
       const userDoc = await getDoc(userDocRef);
@@ -196,6 +197,11 @@ const SixthGrade = ({ username, onLogout }) => {
         "stats.lastTestDate": new Date(),
         "stats.accuracy": newAccuracy
       });
+
+      await setDoc(leaderboardDocRef, {
+        username: auth.currentUser.displayName,
+        correctAnswers: totalCorrect
+      }, { merge: true });
       
     } catch (error) {
       console.error("Hiba a teszt befejezésekor:", error);
@@ -203,7 +209,7 @@ const SixthGrade = ({ username, onLogout }) => {
       setTestActive(false);
       setTestFinished(true);
     }
-  }, [auth, db]);
+  }, []);
 
   const handleAnswerClick = async (isCorrect, optionId) => {
     const user = auth.currentUser;

@@ -118,8 +118,8 @@ const Dashboard = ({ username, onLogout }) => {
   const fetchLeaderboard = async () => {
     try {
       const leaderboardQuery = query(
-        collection(db, "users"),
-        orderBy("stats.correctAnswers", "desc"),
+        collection(db, "leaderboard"),
+        orderBy("correctAnswers", "desc"),
         limit(3)
       );
       
@@ -130,7 +130,7 @@ const Dashboard = ({ username, onLogout }) => {
         const userData = doc.data();
         leaderboardData.push({
           user: userData.username,
-          score: userData.stats?.correctAnswers || 0
+          score: userData.correctAnswers || 0
         });
       });
       

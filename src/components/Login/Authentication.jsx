@@ -8,7 +8,8 @@ import {
   updateProfile,
 } from "firebase/auth"; 
 import { doc, setDoc } from "firebase/firestore"; 
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
+import { checkUsernameExists } from "../../utils/userCheck";
 
 const Auth = ({ isOpen, onClose, initialAuthMode = "login" }) => {
   const [authMode, setAuthMode] = useState(initialAuthMode);
@@ -70,8 +71,15 @@ const Auth = ({ isOpen, onClose, initialAuthMode = "login" }) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-  
+
     try {
+      const usernameExists = await checkUsernameExists(username);
+      if (usernameExists) {
+        setError("Ez a felhasználónév már foglalt. Válassz másikat.");
+        setLoading(false);
+        return;
+      }
+
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -79,43 +87,37 @@ const Auth = ({ isOpen, onClose, initialAuthMode = "login" }) => {
       );
       const user = userCredential.user;
   
-      try {
-        await updateProfile(user, {
-          displayName: username,
-        });
-      } catch (profileError) {
-        console.error("Profil frissítési hiba:", profileError);
-      }
+      await updateProfile(user, {
+        displayName: username,
+      });
 
-      try {
-        const now = new Date();
-        await setDoc(doc(db, "users", user.uid), {
-          username: username,
-          email: email,
-          createdAt: now,
-          stats: {
-            lastLogin: now,
-            loginToday: true,
-            streak: 1,
-            testCount: 0,
-            correctAnswers: 0,
-            incorrectAnswers: 0,
-            lastTestDate: null,
-            accuracy: 0
-          }
-        });
-      } catch (dbError) {
-        console.error("Adatbázis hiba:", dbError);
-      }
+      const now = new Date();
+      const userDocRef = doc(db, "users", user.uid);
+      const usernameDocRef = doc(db, "usernames", username);
 
-      try {
-        await sendEmailVerification(user);
-      } catch (emailError) {
-        console.error("Email küldési hiba:", emailError);
-      }
+      await setDoc(userDocRef, {
+        username: username,
+        email: email,
+        createdAt: now,
+        stats: {
+          lastLogin: now,
+          loginToday: true,
+          streak: 1,
+          testCount: 0,
+          correctAnswers: 0,
+          incorrectAnswers: 0,
+          lastTestDate: null,
+          accuracy: 0
+        }
+      });
+
+      await setDoc(usernameDocRef, { uid: user.uid });
+  
+      await sendEmailVerification(user);
   
       setAuthMode("login");
       setError("Sikeres regisztráció! Elküldtünk egy megerősítő linket az email címedre. Kérjük, kattints rá a bejelentkezés előtt.");
+    
     } catch (error) {
       console.error("Regisztrációs hiba:", error);
       
