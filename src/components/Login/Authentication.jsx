@@ -45,11 +45,22 @@ const Auth = ({ isOpen, onClose, initialAuthMode = "login" }) => {
     setError("");
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      onClose(); 
-      navigate("/dashboard"); 
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      if (user.emailVerified) {
+        onClose(); 
+        navigate("/dashboard"); 
+      } else {
+        await auth.signOut();
+        setError("Bejelentkezés sikertelen. Kérjük, először erősítsd meg az email címedet a kiküldött linkre kattintva.");
+      }
     } catch (error) {
-      setError("Bejelentkezés sikertelen: " + error.message);
+      if (error.code === 'auth/invalid-credential') {
+        setError("Helytelen email cím vagy jelszó.");
+      } else {
+        setError("Bejelentkezés sikertelen: " + error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -61,21 +72,17 @@ const Auth = ({ isOpen, onClose, initialAuthMode = "login" }) => {
     setError("");
   
     try {
-      console.log("Regisztráció kezdése...");
-      
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
       const user = userCredential.user;
-      console.log("Felhasználó létrehozva Auth-ban:", user.uid);
   
       try {
         await updateProfile(user, {
           displayName: username,
         });
-        console.log("Profil frissítve");
       } catch (profileError) {
         console.error("Profil frissítési hiba:", profileError);
       }
@@ -97,20 +104,18 @@ const Auth = ({ isOpen, onClose, initialAuthMode = "login" }) => {
             accuracy: 0
           }
         });
-        console.log("Felhasználói adatok hozzáadva egységes struktúrával");
       } catch (dbError) {
         console.error("Adatbázis hiba:", dbError);
       }
 
       try {
         await sendEmailVerification(user);
-        console.log("Ellenőrző email elküldve");
       } catch (emailError) {
         console.error("Email küldési hiba:", emailError);
       }
   
       setAuthMode("login");
-      setError("Sikeres regisztráció! Bejelentkezhetsz az adataiddal.");
+      setError("Sikeres regisztráció! Elküldtünk egy megerősítő linket az email címedre. Kérjük, kattints rá a bejelentkezés előtt.");
     } catch (error) {
       console.error("Regisztrációs hiba:", error);
       

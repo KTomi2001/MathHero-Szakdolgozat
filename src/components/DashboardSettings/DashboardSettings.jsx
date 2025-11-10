@@ -334,7 +334,7 @@ const DashboardSettings = ({ username, onLogout }) => {
         />
       )}
 
-      <div className="flex-grow-1" style={{ marginLeft: "0" }}>
+      <div className="flex-grow-1" id="main-content-area">
         <div className="d-lg-none">
           <button
             className="btn btn-primary rounded-circle m-3"
@@ -507,13 +507,13 @@ const DashboardSettings = ({ username, onLogout }) => {
 
       <style>{`
         @media (min-width: 992px) {
-          .container-fluid {
+          #main-content-area {
             margin-left: 250px !important;
           }
         }
         
         @media (max-width: 991.98px) {
-          .container-fluid {
+          #main-content-area {
             margin-left: 0 !important;
           }
           
