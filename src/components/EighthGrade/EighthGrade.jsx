@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import 'katex/dist/katex.min.css';
 import { InlineMath } from 'react-katex';
 import { useNavigate } from "react-router-dom";
@@ -162,7 +162,7 @@ const EighthGrade = ({ username, onLogout }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(180); // 180 mp
+  const [timeLeft, setTimeLeft] = useState(180); 
   const [testActive, setTestActive] = useState(false);
   const [testFinished, setTestFinished] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
@@ -192,6 +192,40 @@ const EighthGrade = ({ username, onLogout }) => {
     navigate("/practice");
   };
 
+  const finishTest = useCallback(async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const userDocRef = doc(db, "users", user.uid);
+    
+    try {
+      const userDoc = await getDoc(userDocRef);
+      if (!userDoc.exists()) {
+        console.error("User doc not found!");
+        return;
+      }
+      
+      const currentStats = userDoc.data().stats;
+      const totalCorrect = currentStats.correctAnswers;
+      const totalIncorrect = currentStats.incorrectAnswers;
+      const totalAnswers = totalCorrect + totalIncorrect;
+      
+      const newAccuracy = totalAnswers > 0 ? (totalCorrect / totalAnswers) * 100 : 0;
+      
+      await updateDoc(userDocRef, {
+        "stats.testCount": increment(1),
+        "stats.lastTestDate": new Date(),
+        "stats.accuracy": newAccuracy
+      });
+      
+    } catch (error) {
+      console.error("Hiba a teszt befejezésekor:", error);
+    } finally {
+      setTestActive(false);
+      setTestFinished(true);
+    }
+  }, [auth, db]);
+
   const handleAnswerClick = async (isCorrect, optionId) => {
     const user = auth.currentUser;
     if (!user) return;
@@ -219,11 +253,7 @@ const EighthGrade = ({ username, onLogout }) => {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
         setTimeLeft(180); 
       } else {
-        await updateDoc(userDocRef, {
-          "stats.testCount": increment(1)
-        });
-        setTestActive(false);
-        setTestFinished(true);
+        await finishTest();
       }
     } catch (error) {
       console.error("Hiba a válasz rögzítésekor:", error);
@@ -237,42 +267,38 @@ const EighthGrade = ({ username, onLogout }) => {
         setTimeLeft((prevTime) => prevTime - 1);
       }, 1000);
     } else if (timeLeft === 0 && testActive) {
-      const user = auth.currentUser;
       
-      const newUserAnswers = [...userAnswers];
-      newUserAnswers[currentQuestionIndex] = "timeout";
-      setUserAnswers(newUserAnswers);
-      
-      if (user) {
-        const userDocRef = doc(db, "users", user.uid);
-        updateDoc(userDocRef, {
-          "stats.incorrectAnswers": increment(1)
-        }).catch(error => {
-          console.error("Hiba a válasz rögzítésekor:", error);
-        });
-      }
-      
-      setIncorrectAnswers(prevIncorrect => prevIncorrect + 1);
-      
-      if (currentQuestionIndex < questions.length - 1) {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
-        setTimeLeft(180);
-      } else {
+      (async () => {
+        const user = auth.currentUser;
+        
+        const newUserAnswers = [...userAnswers];
+        newUserAnswers[currentQuestionIndex] = "timeout";
+        setUserAnswers(newUserAnswers);
+        
         if (user) {
           const userDocRef = doc(db, "users", user.uid);
-          updateDoc(userDocRef, {
-            "stats.testCount": increment(1)
-          }).catch(error => {
-            console.error("Hiba a teszt befejezésekor:", error);
-          });
+          try {
+            await updateDoc(userDocRef, {
+              "stats.incorrectAnswers": increment(1)
+            });
+          } catch (error) {
+            console.error("Hiba a válasz rögzítésekor:", error);
+          }
         }
-        setTestActive(false);
-        setTestFinished(true);
-      }
+        
+        setIncorrectAnswers(prevIncorrect => prevIncorrect + 1);
+        
+        if (currentQuestionIndex < questions.length - 1) {
+          setCurrentQuestionIndex(currentQuestionIndex + 1);
+          setTimeLeft(180);
+        } else {
+          await finishTest();
+        }
+      })();
     }
 
     return () => clearInterval(timer);
-  }, [testActive, timeLeft, currentQuestionIndex, userAnswers]);
+  }, [testActive, timeLeft, currentQuestionIndex, userAnswers, finishTest]);
 
   const restartTest = () => {
     setCurrentQuestionIndex(0);
