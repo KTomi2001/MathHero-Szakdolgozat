@@ -159,7 +159,11 @@ const Dashboard = ({ username, onLogout }) => {
         }}
       >
         <div className="text-center py-4">
-          <img src={cat} alt="MathHero" style={{ width: '65px', height: '65px' }} />
+          <img
+            src={cat}
+            alt="MathHero"
+            style={{ width: "80px", height: "80px" }}
+          />
           <h5 className="mt-2 mb-0">MATHHERO</h5>
         </div>
         

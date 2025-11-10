@@ -260,7 +260,7 @@ const DashboardSettings = ({ username, onLogout }) => {
           <img
             src={cat}
             alt="MathHero"
-            style={{ width: "65px", height: "65px" }}
+            style={{ width: "80px", height: "80px" }}
           />
           <h5 className="mt-2 mb-0">MATHHERO</h5>
         </div>
