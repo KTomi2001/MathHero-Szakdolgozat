@@ -25,6 +25,7 @@ const DashboardSettings = ({ username, onLogout }) => {
   const [email, setEmail] = useState("");
   const [originalEmail, setOriginalEmail] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
+  const [emailFormPassword, setEmailFormPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState({ text: "", type: "" });
@@ -97,7 +98,7 @@ const DashboardSettings = ({ username, onLogout }) => {
     setMessage({ text: "", type: "" });
 
     try {
-      if (!currentPassword) {
+      if (!emailFormPassword) {
         setMessage({
           text: "Add meg a jelenlegi jelszavad az email cím módosításához.",
           type: "error",
@@ -119,7 +120,7 @@ const DashboardSettings = ({ username, onLogout }) => {
         }
       }
 
-      const isReauthenticated = await reauthenticate(currentPassword);
+      const isReauthenticated = await reauthenticate(emailFormPassword);
       if (!isReauthenticated) {
         setLoading(false);
         return;
@@ -139,7 +140,7 @@ const DashboardSettings = ({ username, onLogout }) => {
         text: "Email cím sikeresen frissítve! Kérjük, erősítsd meg az új email címed.",
         type: "success",
       });
-      setCurrentPassword("");
+      setEmailFormPassword("");
     } catch (error) {
       console.error("Email frissítési hiba:", error);
       setMessage({
@@ -423,15 +424,15 @@ const DashboardSettings = ({ username, onLogout }) => {
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="currentPassword" className="form-label">
+                    <label htmlFor="emailFormPassword" className="form-label">
                       Jelenlegi jelszó
                     </label>
                     <input
                       type="password"
                       className="form-control"
-                      id="currentPassword"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      id="emailFormPassword"
+                      value={emailFormPassword}
+                      onChange={(e) => setEmailFormPassword(e.target.value)}
                       required
                     />
                   </div>
