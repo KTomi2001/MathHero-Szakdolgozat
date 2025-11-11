@@ -5,13 +5,14 @@ import { auth, db } from "../../firebase";
 import { doc, getDoc, updateDoc, collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import "./DashboardMain.css";
 
-const Dashboard = ({ username, onLogout }) => {
+const Dashboard = ({ onLogout }) => {
   const [testCount, setTestCount] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [incorrectAnswers, setIncorrectAnswers] = useState(0);
   const [streak, setStreak] = useState(0);
   const [leaderboard, setLeaderboard] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [displayName, setDisplayName] = useState("");
   const navigate = useNavigate();
 
   const handleUserClick = () => {
@@ -40,17 +41,23 @@ const Dashboard = ({ username, onLogout }) => {
 
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
+        setDisplayName(userData.username || user.displayName);
+        
         const stats = userData.stats || {};
-
         setTestCount(stats.testCount || 0);
         setCorrectAnswers(stats.correctAnswers || 0);
         setIncorrectAnswers(stats.incorrectAnswers || 0);
         setStreak(stats.streak || 1);
         
         await updateUserStreak(userDocRef, stats);
+      } else {
+        setDisplayName(user.displayName);
       }
     } catch (error) {
       console.error("Hiba a felhasználói adatok lekérésekor:", error);
+      if (auth.currentUser) {
+        setDisplayName(auth.currentUser.displayName);
+      }
     }
   };
 
@@ -241,7 +248,7 @@ const Dashboard = ({ username, onLogout }) => {
 
         <div className="container" style={{ paddingLeft: '0', paddingRight: '0' }}>
           <div className="mb-4 text-center" style={{ paddingLeft: '20px', paddingRight: '20px', paddingTop: '20px' }}>
-            <h2 className="display-5 fw-bold text-dark">Üdvözöllek, {username || "(USER)"}!</h2>
+            <h2 className="display-5 fw-bold text-dark">Üdvözöllek, {displayName || "(USER)"}!</h2>
           </div>
 
           <div className="row g-4 justify-content-center" style={{ paddingLeft: '20px', paddingRight: '20px', paddingBottom: '20px' }}>
